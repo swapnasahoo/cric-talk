@@ -22,82 +22,81 @@ const RoomMessageCard = ({
 }: Props) => {
   const isOwnMessage = item.authorId === userId;
 
-  return (
-    <View>
-      {/* USER AVATAR */}
-      <View
-        className={`${
-          isOwnMessage
-            ? "self-end bg-blue-400 text-white"
-            : "self-start bg-gray-400 text-black"
-        } mb-1 w-8 h-8 items-center justify-center rounded-full`}
-      >
-        <Text className="uppercase font-medium">
-          {item.authorName.charAt(0)}
-        </Text>
-      </View>
+  const formatMessageTime = (date: string) => {
+    const d = new Date(date);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
-      {/* MESSAGE BUBBLE */}
-      <View
-        className={`${
-          isOwnMessage ? "bg-blue-400 self-end" : "self-start bg-gray-400"
-        } px-3 py-4 mb-2 rounded-lg max-w-[75%] ${
-          isOwnMessage
-            ? "rounded-tr-3xl rounded-bl-3xl"
-            : "rounded-tl-3xl rounded-br-3xl"
-        }`}
-      >
-        {/* AUTHOR NAME */}
+  return (
+    <View className={`mb-4 ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+      <View className="flex-row items-end gap-2 max-w-[85%]">
         {!isOwnMessage && (
-          <Text className="text-black text-sm font-medium mb-2">
-            {item.authorName}
-          </Text>
+          <View className="w-8 h-8 bg-orange-100 rounded-full items-center justify-center border border-orange-200">
+            <Text className="text-orange-600 font-bold text-xs uppercase">
+              {item.authorName.charAt(0)}
+            </Text>
+          </View>
         )}
 
-        {/* MESSAGE CONTENT */}
-        <Text
-          className={`${
-            isOwnMessage ? "text-white" : "text-black"
-          } tracking-wide leading-5`}
+        <View
+          className={`px-4 py-3 rounded-2xl ${
+            isOwnMessage 
+              ? "bg-orange-500 rounded-br-none" 
+              : "bg-white border border-gray-100 rounded-bl-none shadow-sm"
+          }`}
         >
-          {item.content}
-        </Text>
+          {!isOwnMessage && (
+            <Text className="text-orange-600 text-[10px] font-black uppercase tracking-tighter mb-1">
+              {item.authorName}
+            </Text>
+          )}
 
-        {/* SEND DATE */}
-        <Text
-          className={`${
-            isOwnMessage ? "text-blue-100" : "text-gray-100"
-          } mt-2 text-sm ml-auto`}
-        >
-          {new Date(item.$createdAt).toLocaleDateString() ===
-          new Date().toLocaleDateString()
-            ? new Date(item.$createdAt).toLocaleString("en-IN", {
-                timeStyle: "short",
-              })
-            : new Date(item.$createdAt).toLocaleString("en-IN", {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
-        </Text>
-      </View>
-
-      {/* EDIT + DELETE BUTTONS */}
-      {isOwnMessage && (
-        <View className="self-end flex-row gap-2 mb-4">
-          <Pressable
-            onPress={() => {
-              setIsEditModalVisible(true);
-              setEditRoomMessageId(item.$id);
-              setEditMessageContent(item.content);
-            }}
+          <Text
+            className={`${
+              isOwnMessage ? "text-white" : "text-slate-800"
+            } text-[15px] leading-5 font-medium`}
           >
-            <Ionicons name="create-outline" size={18} color="black" />
-          </Pressable>
+            {item.content}
+          </Text>
 
-          <Pressable onPress={() => handleDeleteRoomMessage(item.$id)}>
-            <Ionicons name="trash-outline" size={18} color="black" />
-          </Pressable>
+          <View className="flex-row items-center justify-end mt-1 gap-1">
+            <Text
+              className={`${
+                isOwnMessage ? "text-orange-100" : "text-gray-400"
+              } text-[9px] font-bold`}
+            >
+              {formatMessageTime(item.$createdAt)}
+            </Text>
+            {isOwnMessage && (
+              <Ionicons name="checkmark-done" size={12} color="#ffedd5" />
+            )}
+          </View>
         </View>
+
+        {isOwnMessage && (
+          <View className="flex-col gap-2 pb-1">
+            <Pressable
+              onPress={() => {
+                setIsEditModalVisible(true);
+                setEditRoomMessageId(item.$id);
+                setEditMessageContent(item.content);
+              }}
+              className="p-1 bg-gray-100 rounded-full"
+            >
+              <Ionicons name="pencil" size={12} color="#64748b" />
+            </Pressable>
+            <Pressable 
+              onPress={() => handleDeleteRoomMessage(item.$id)}
+              className="p-1 bg-red-50 rounded-full"
+            >
+              <Ionicons name="trash" size={12} color="#ef4444" />
+            </Pressable>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
       )}
     </View>
   );

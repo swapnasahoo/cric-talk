@@ -1,6 +1,4 @@
 import useCreatePost from "@/hooks/useCreatePost";
-import useLikePost from "@/hooks/useLikePost";
-import { account } from "@/libs/appwrite";
 import { showToast } from "@/libs/showToast";
 import { executePost, fetchPosts } from "@/services/posts.service";
 import { usePosts } from "@/store/usePosts";
@@ -10,27 +8,26 @@ import { router } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ViewToken } from "react-native";
 import {
-  Alert,
-  Dimensions,
-  FlatList,
-  Modal,
-  Pressable,
-  Text,
-  TextInput,
-  View,
+    Alert,
+    Dimensions,
+    FlatList,
+    Modal,
+    Pressable,
+    RefreshControl,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostCard from "../components/PostCard";
 
 const HomeScreen = () => {
-  const [userId, setUserId] = useState<string>("");
-  const [authorName, setAuthorName] = useState<string>("");
-
   const [searchQuery, setSearchQuery] = useState<string>("");
   const seacrhQueryRef = useRef<TextInput>(null);
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const [content, setContent] = useState<string>("");
 
@@ -38,21 +35,28 @@ const HomeScreen = () => {
   const setPosts = usePosts((s) => s.setPosts);
   const updatePostState = usePosts((s) => s.updatePost);
   const { createNewPost } = useCreatePost();
-  const { likePost } = useLikePost();
 
-  const username = useUser((s) => s.username);
+  const { username, userId } = useUser();
 
   const SIDEBAR_WIDTH = Dimensions.get("window").width * 0.75;
 
-  async function increamentView(postId: string) {
-    const execution = await executePost({
-      action: "view",
-      postId: postId,
-    });
-    const parsed = JSON.parse(execution.responseBody);
+  const filteredPosts = posts.filter(post => 
+    post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.authorName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-    const updatedPost = parsed.data;
-    updatePostState(updatedPost);
+  async function increamentView(postId: string) {
+    try {
+      const execution = await executePost({
+        action: "view",
+        postId: postId,
+      });
+      const parsed = JSON.parse(execution.responseBody);
+      const updatedPost = parsed.data;
+      updatePostState(updatedPost);
+    } catch (error) {
+      console.error("Failed to increment view", error);
+    }
   }
 
   const viewedPostsRef = useRef<Set<string>>(new Set());
@@ -63,39 +67,40 @@ const HomeScreen = () => {
         if (viewedPostsRef.current.has(item.$id)) return;
 
         viewedPostsRef.current.add(item.$id);
-
         increamentView(item.$id);
       });
     },
     [posts]
   );
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchUserId() {
-      if (!mounted) return;
-      const user = await account.get();
-      const name = user.name || user.email.split("@")[0];
-
-      setUserId(user.$id);
-      setAuthorName(name);
-    }
-    fetchUserId();
-
-    async function fetchAllPosts() {
-      if (!mounted) return;
+  const fetchAllPosts = async () => {
+    try {
       const data = await fetchPosts();
       setPosts(data.rows);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
     }
-    fetchAllPosts();
+  };
 
-    return () => {
-      mounted = false;
-    };
+  useEffect(() => {
+    fetchAllPosts();
   }, []);
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchAllPosts();
+    setRefreshing(false);
+  }, []);
+
+  const sidebarStyle = useAnimatedStyle(() => {
+    return {
+      left: withTiming(isDrawerOpen ? 0 : -SIDEBAR_WIDTH, { duration: 300 }),
+    };
+  });
+
   async function handleCreatePost() {
+    if (!content.trim()) return;
+    
     Alert.alert("Creating Post", "Are you sure you want to create this post?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -111,6 +116,7 @@ const HomeScreen = () => {
               text1: "Post Created",
               text2: "Your post has been created successfully.",
             });
+            onRefresh();
           } catch (error) {
             showToast({
               type: "error",
@@ -124,203 +130,229 @@ const HomeScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-gray-50">
       {/* HEADER */}
-      <View className="w-full h-30 bg-orange-500">
-        <SafeAreaView>
+      <View className="w-full bg-orange-500 shadow-md z-10">
+        <SafeAreaView edges={['top']}>
           <View className="px-6 py-4 flex-row items-center justify-between w-full">
             {/* USER AVATAR */}
             <Pressable
-              className="w-10 h-10 bg-gray-200 rounded-full items-center justify-center transition-all ease-in-out duration-300 active:scale-[0.98] active:opacity-85"
+              className="w-10 h-10 bg-orange-400 rounded-full items-center justify-center border border-orange-300 active:scale-95"
               onPress={() => setIsDrawerOpen(true)}
             >
-              <Text className="text-slate-900 font-medium text-lg capitalize">
+              <Text className="text-white font-bold text-lg capitalize">
                 {username?.charAt(0)}
               </Text>
             </Pressable>
 
             {/* APP NAME */}
-            <Text className="text-white text-xl font-semibold">CricTalk</Text>
+            <View className="items-center">
+              <Text className="text-white text-2xl font-bold tracking-tight">CricTalk</Text>
+              <View className="h-1 w-8 bg-white rounded-full -mt-0.5" />
+            </View>
 
             {/* NOTIFICATION ICON */}
-            <Pressable className="bg-orange-600 p-2 rounded-full items-center justify-center transition-all ease-in-out duration-300 active:scale-[0.98] active:opacity-85">
+            <Pressable className="bg-orange-600 w-10 h-10 rounded-full items-center justify-center active:scale-95">
               <Octicons name="bell-fill" size={18} color="white" />
             </Pressable>
           </View>
         </SafeAreaView>
       </View>
 
-      <View className="px-6 py-4">
-        {/* SEARCH BAR + FILTER BUTTON */}
-        <View className="flex-row items-center">
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            ref={seacrhQueryRef}
-            placeholder="Search anything..."
-            className="border border-gray-300 rounded-lg pl-4 flex-1 mr-4 h-12"
-          />
+      <FlatList
+        data={filteredPosts}
+        keyExtractor={(item) => item.$id}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#f97316"]} />
+        }
+        ListHeaderComponent={
+          <View className="mb-6">
+            {/* SEARCH BAR + FILTER BUTTON */}
+            <View className="flex-row items-center gap-3">
+              <View className="flex-1 flex-row items-center bg-white border border-gray-200 rounded-2xl px-4 h-12 shadow-sm">
+                <Octicons name="search" size={18} color="#94a3b8" />
+                <TextInput
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  ref={seacrhQueryRef}
+                  placeholder="Search posts or authors..."
+                  className="flex-1 ml-3 text-slate-900"
+                  placeholderTextColor="#94a3b8"
+                />
+                {searchQuery.length > 0 && (
+                  <Pressable onPress={() => setSearchQuery("")}>
+                    <Ionicons name="close-circle" size={18} color="#cbd5e1" />
+                  </Pressable>
+                )}
+              </View>
 
-          <Pressable className="bg-orange-500 w-12 h-12 rounded-lg items-center justify-center">
-            <Octicons name="filter" size={24} color="white" />
-          </Pressable>
-        </View>
-
-        {/* POSTS */}
-        <View className="mt-6">
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item.$id}
-            contentContainerStyle={{ paddingBottom: 200 }}
-            showsVerticalScrollIndicator={false}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
-            renderItem={({ item }) => <PostCard userId={userId} post={item} />}
-          />
-        </View>
-      </View>
+              <Pressable className="bg-white w-12 h-12 rounded-2xl items-center justify-center border border-gray-200 shadow-sm active:bg-gray-50">
+                <Octicons name="filter" size={20} color="#f97316" />
+              </Pressable>
+            </View>
+            
+            <View className="mt-6 flex-row items-center justify-between">
+              <Text className="text-slate-900 text-xl font-bold">Recent Updates</Text>
+              <Pressable>
+                <Text className="text-orange-500 font-medium">View Trends</Text>
+              </Pressable>
+            </View>
+          </View>
+        }
+        renderItem={({ item }) => <PostCard userId={userId!} post={item} />}
+        ListEmptyComponent={
+          <View className="flex-1 items-center justify-center py-20">
+            <Octicons name="inbox" size={48} color="#cbd5e1" />
+            <Text className="text-slate-400 mt-4 text-base">No posts found</Text>
+          </View>
+        }
+      />
 
       {/* CREATE POST BUTTON */}
       <Pressable
-        className="w-16 h-16 bg-orange-500 rounded-full items-center justify-center absolute bottom-6 right-6 shadow-md elevation-xs"
+        className="w-16 h-16 bg-orange-500 rounded-full items-center justify-center absolute bottom-10 right-6 shadow-lg elevation-lg active:scale-90"
         onPress={() => setIsVisible(true)}
       >
-        <Octicons name="plus" size={24} color="white" />
+        <Octicons name="plus" size={30} color="white" />
       </Pressable>
 
       {/* CREATE POST MODAL */}
       <Modal visible={isVisible} transparent animationType="slide">
-        <View className="flex-1 bg-white">
-          <SafeAreaView className="flex-1">
-            {/* MODAL HEADER */}
-            <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-200">
-              <Ionicons
-                name="close"
-                size={24}
-                color="#0f172b"
-                onPress={() => setIsVisible(false)}
-              />
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-white rounded-t-[32px] h-[85%] pb-10">
+            <SafeAreaView className="flex-1" edges={['bottom']}>
+              {/* MODAL HEADER */}
+              <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
+                <Pressable onPress={() => setIsVisible(false)} className="p-2">
+                  <Ionicons name="close" size={28} color="#1e293b" />
+                </Pressable>
 
-              <Pressable onPress={handleCreatePost}>
-                <Text className="text-orange-500 font-semibold">
-                  Create Post
-                </Text>
-              </Pressable>
-            </View>
+                <Text className="text-lg font-bold text-slate-900">New Post</Text>
 
-            {/* MODAL CONTENT */}
-            <View className="px-6 py-4">
-              <Text className="text-lg font-semibold text-slate-900 tracking-wide">
-                What's on your mind?
-              </Text>
+                <Pressable 
+                  onPress={handleCreatePost}
+                  disabled={!content.trim()}
+                  className={`px-4 py-2 rounded-full ${content.trim() ? 'bg-orange-500' : 'bg-orange-200'}`}
+                >
+                  <Text className="text-white font-bold">Post</Text>
+                </Pressable>
+              </View>
 
-              <TextInput
-                value={content}
-                onChangeText={setContent}
-                placeholder="Write anything about cricket..."
-                multiline
-                numberOfLines={8}
-                maxLength={512}
-                className="border border-gray-300 mt-2 rounded-lg text-slate-900"
-              />
+              {/* MODAL CONTENT */}
+              <View className="px-6 py-6 flex-1">
+                <View className="flex-row gap-4">
+                  <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center">
+                    <Text className="text-orange-600 font-bold text-xl">{username?.charAt(0)}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <TextInput
+                      value={content}
+                      onChangeText={setContent}
+                      placeholder="What's happening in cricket?"
+                      multiline
+                      textAlignVertical="top"
+                      className="text-lg text-slate-900 min-h-[150px]"
+                      placeholderTextColor="#94a3b8"
+                      autoFocus
+                    />
+                  </View>
+                </View>
 
-              <Text className="text-sm text-gray-800 mt-2 ml-auto">
-                {content.length} / 512
-              </Text>
-            </View>
-          </SafeAreaView>
+                {/* ATTACHMENTS */}
+                <View className="mt-auto flex-row items-center gap-6 py-4 border-t border-gray-100">
+                  <Pressable className="flex-row items-center gap-2">
+                    <Ionicons name="image-outline" size={24} color="#f97316" />
+                    <Text className="text-gray-600 font-medium">Image</Text>
+                  </Pressable>
+                  <Pressable className="flex-row items-center gap-2">
+                    <Ionicons name="videocam-outline" size={24} color="#f97316" />
+                    <Text className="text-gray-600 font-medium">Video</Text>
+                  </Pressable>
+                  <Text className="ml-auto text-sm text-gray-400">
+                    {content.length}/512
+                  </Text>
+                </View>
+              </View>
+            </SafeAreaView>
+          </View>
         </View>
       </Modal>
 
       {/* PROFILE DRAWER OVERLAY */}
       {isDrawerOpen && (
         <Pressable
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            zIndex: 10,
-          }}
+          className="absolute inset-0 bg-black/60 z-20"
           onPress={() => setIsDrawerOpen(false)}
         />
       )}
 
       {/* PROFILE DRAWER */}
       <Animated.View
-        style={{
-          width: SIDEBAR_WIDTH,
-          backgroundColor: "#0f172b",
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: isDrawerOpen ? 0 : -320,
-          shadowColor: "black",
-          transitionProperty: "all",
-          transitionDuration: 250,
-          transitionTimingFunction: "ease-in",
-          zIndex: 20,
-        }}
+        style={[
+          {
+            width: SIDEBAR_WIDTH,
+            backgroundColor: "#0f172b",
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            zIndex: 30,
+            paddingTop: 50,
+          },
+          sidebarStyle
+        ]}
       >
-        <SafeAreaView>
-          <View className="px-6 py-4">
-            {/* USER INFO */}
-            <Pressable className="flex-row items-center gap-2">
-              <View className="w-8 h-8 bg-slate-400 rounded-full items-center justify-center">
-                <Text className="uppercase text-lg font-medium text-slate-800">
-                  {username?.charAt(0)}
-                </Text>
-              </View>
-
-              <Text className="text-white text-base">{username}</Text>
-            </Pressable>
-
-            {/* PROFILE CONTENTS */}
-            <View className="mt-8 gap-4">
-              <Pressable
-                className="flex-row items-center gap-2"
-                onPress={() => router.push("/(profile)/ProfileScreen")}
-              >
-                <Ionicons name="person-outline" size={24} color="white" />
-                <Text className="text-white font-medium text-xl">Profile</Text>
-              </Pressable>
-
-              <Pressable
-                className="flex-row items-center gap-2"
-                onPress={() => {
-                  setIsDrawerOpen(false);
-                  seacrhQueryRef.current?.focus();
-                }}
-              >
-                <Ionicons name="search-outline" size={24} color="white" />
-                <Text className="text-white font-medium text-xl">Explore</Text>
-              </Pressable>
-
-              <Pressable
-                className="flex-row items-center gap-2"
-                onPress={() => {
-                  setIsDrawerOpen(false);
-                  router.push("/(tabs)/RoomsScreen");
-                }}
-              >
-                <Ionicons
-                  name="chatbubble-ellipses-outline"
-                  size={24}
-                  color="white"
-                />
-                <Text className="text-white font-medium text-xl">Rooms</Text>
-              </Pressable>
-
-              <Pressable
-                className="flex-row items-center gap-2"
-                onPress={() => router.push("/(profile)/SettingsScreen")}
-              >
-                <Ionicons name="settings-outline" size={24} color="white" />
-                <Text className="text-white font-medium text-xl">Settings</Text>
-              </Pressable>
+        <SafeAreaView className="flex-1 px-6">
+          {/* USER INFO */}
+          <View className="mb-10 items-center">
+            <View className="w-20 h-20 bg-slate-700 rounded-full items-center justify-center border-4 border-slate-600 mb-4 transition-all active:scale-95">
+              <Text className="uppercase text-3xl font-bold text-white">
+                {username?.charAt(0)}
+              </Text>
             </View>
+            <Text className="text-white text-xl font-bold">{username}</Text>
+            <Text className="text-slate-400 text-sm">Cricket Enthusiast</Text>
+          </View>
+
+          {/* PROFILE CONTENTS */}
+          <View className="gap-6">
+            {[
+              { label: "Profile", icon: "person-outline", href: "/(profile)/ProfileScreen" },
+              { label: "Rooms", icon: "chatbubbles-outline", href: "/(tabs)/RoomsScreen" },
+              { label: "Leaderboard", icon: "trophy-outline", href: "/(tabs)/LeaderboardScreen" },
+              { label: "Settings", icon: "settings-outline", href: "/(profile)/SettingsScreen" },
+            ].map((item, idx) => (
+              <Pressable
+                key={idx}
+                className="flex-row items-center gap-4 py-2 active:bg-slate-800 rounded-xl"
+                onPress={() => {
+                  setIsDrawerOpen(false);
+                  router.push(item.href as any);
+                }}
+              >
+                <View className="w-10 h-10 bg-slate-800 rounded-full items-center justify-center">
+                  <Ionicons name={item.icon as any} size={22} color="white" />
+                </View>
+                <Text className="text-white font-semibold text-lg">{item.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View className="mt-auto mb-10">
+            <Pressable 
+              className="flex-row items-center gap-4 py-4 border-t border-slate-800"
+              onPress={() => {
+                // Handle logout logic here or redirect to login
+                setIsDrawerOpen(false);
+                router.replace("/(auth)/LoginScreen");
+              }}
+            >
+              <Ionicons name="log-out-outline" size={24} color="#f87171" />
+              <Text className="text-red-400 font-bold text-lg">Log Out</Text>
+            </Pressable>
           </View>
         </SafeAreaView>
       </Animated.View>
