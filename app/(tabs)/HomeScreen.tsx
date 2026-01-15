@@ -254,7 +254,7 @@ const HomeScreen = () => {
                       placeholder="What's happening in cricket?"
                       multiline
                       textAlignVertical="top"
-                      className="text-lg text-slate-900 min-h-37.5"
+                      className="text-lg text-slate-900 min-h-[150px]"
                       placeholderTextColor="#94a3b8"
                       autoFocus
                     />
