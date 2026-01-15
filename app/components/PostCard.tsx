@@ -91,6 +91,3 @@ const PostCard = ({ userId, post }: Props) => {
 };
 
 export default PostCard;
-
-
-export default PostCard;
