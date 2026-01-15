@@ -19,7 +19,6 @@ import {
 } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import CreatePostModal from "../components/CreatePostModal";
 import PostCard from "../components/PostCard";
 
 const HomeScreen = () => {
