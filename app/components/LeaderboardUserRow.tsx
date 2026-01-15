@@ -9,26 +9,29 @@ type Props = {
 
 const LeaderboardUserRow = ({ user, rank }: Props) => {
   return (
-    <View className="w-full h-16 bg-slate-200 rounded-lg shadow-sm elevation-xs transition-all duration-300 active:scale-[0.98] active:opacity-85 px-4 flex-row items-center mb-4">
-      <View className="bg-orange-500 w-10 h-10 items-center justify-center rounded-full">
-        <Text className="text-white font-medium">#{rank + 3}</Text>
+    <View className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex-row items-center mb-3 active:bg-gray-50">
+      <View className="bg-gray-100 w-10 h-10 items-center justify-center rounded-xl">
+        <Text className="text-slate-500 font-bold">#{rank + 3}</Text>
       </View>
 
-      <View className="ml-4">
-        <Text className="text-slate-900 font-medium">{user.username}</Text>
-        <Text className="text-xs text-slate-500">
-          {user.messageCount} message
-          {user.messageCount === 1 ? "" : "s"}
+      <View className="ml-4 flex-1">
+        <Text className="text-slate-900 font-bold text-base">{user.username}</Text>
+        <Text className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+          Collector
         </Text>
       </View>
 
-      <Text className="ml-auto font-medium text-slate-800">
-        {new Intl.NumberFormat("en-IN", { notation: "compact" }).format(
-          user.messageCount
-        )}
-      </Text>
+      <View className="items-end">
+        <Text className="text-orange-500 font-black text-lg">
+          {new Intl.NumberFormat("en-IN", { notation: "compact" }).format(
+            user.messageCount
+          )}
+        </Text>
+        <Text className="text-[10px] text-gray-400 font-medium uppercase">Points</Text>
+      </View>
     </View>
   );
 };
+
 
 export default LeaderboardUserRow;
