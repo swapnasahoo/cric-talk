@@ -76,7 +76,7 @@ const ProfileScreen = () => {
                   {email}
                 </Text>
                 <View className="bg-orange-600 self-start px-3 py-1 rounded-full mt-2">
-                   <Text className="text-white text-[10px] font-bold">Bred Enthusiast</Text>
+                   <Text className="text-white text-[10px] font-bold">Cricket Enthusiast</Text>
                 </View>
               </View>
             </View>
