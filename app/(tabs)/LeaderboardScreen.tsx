@@ -120,9 +120,5 @@ const LeaderboardScreen = () => {
     </View>
   );
 };
-      </View>
-    </View>
-  );
-};
 
 export default LeaderboardScreen;
