@@ -123,7 +123,7 @@ const RoomsScreen = () => {
         <FlatList
           data={filteredRooms}
           keyExtractor={(item) => item.$id}
-          contentContainerStyle={{ paddingTop: 4, paddingBottom: 80 }}
+          contentContainerStyle={{ paddingTop: 4, paddingBottom: 130 }}
           renderItem={({ item }) => <MatchRoomCard room={item} />}
         />
       </SafeAreaView>
