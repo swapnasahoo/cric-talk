@@ -86,6 +86,3 @@ const MatchRoomCard = ({ room }: { room: Room }) => {
 };
 
 export default MatchRoomCard;
-
-
-export default MatchRoomCard;
