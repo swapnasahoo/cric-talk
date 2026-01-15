@@ -200,7 +200,7 @@ const RoomDiscussion = () => {
       {/* EDIT MODAL */}
       <Modal visible={isEditModalVisible} transparent animationType="fade">
         <View className="flex-1 bg-black/60 justify-center px-6">
-          <View className="bg-white rounded-4xl p-6 shadow-2xl">
+          <View className="bg-white rounded-3xl p-6 shadow-2xl">
             <Text className="text-xl font-bold text-slate-900 mb-4">Edit message</Text>
             <View className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-6">
               <TextInput
