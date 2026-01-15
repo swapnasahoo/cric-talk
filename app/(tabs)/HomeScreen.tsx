@@ -42,7 +42,7 @@ const HomeScreen = () => {
     post.authorName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  async function increamentView(postId: string) {
+  async function incrementView(postId: string) {
     try {
       const execution = await executePost({
         action: "view",
