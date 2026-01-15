@@ -3,8 +3,7 @@ import { showToast } from "@/libs/showToast";
 import { executePost, fetchPosts } from "@/services/posts.service";
 import { usePosts } from "@/store/usePosts";
 import { useUser } from "@/store/useUser";
-import { Ionicons, Octicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { Octicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ViewToken } from "react-native";
 import {
@@ -20,7 +19,9 @@ import {
 } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CreatePostModal from "../components/CreatePostModal";
 import PostCard from "../components/PostCard";
+import ProfileDrawer from "../components/ProfileDrawer";
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -28,8 +29,6 @@ const HomeScreen = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-
-  const [content, setContent] = useState<string>("");
 
   const posts = usePosts((s) => s.posts);
   const setPosts = usePosts((s) => s.setPosts);
