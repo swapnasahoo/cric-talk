@@ -87,12 +87,12 @@ const ProfileScreen = () => {
                 <Text className="text-white font-black text-xl">{userPosts.length}</Text>
                 <Text className="text-orange-100 text-[10px] font-bold uppercase tracking-widest">Posts</Text>
               </View>
-              <View className="w-[1px] bg-white/10" />
+              <View className="w-px bg-white/10" />
               <View className="items-center">
                 <Text className="text-white font-black text-xl">{userStats?.messageCount || 0}</Text>
                 <Text className="text-orange-100 text-[10px] font-bold uppercase tracking-widest">Messages</Text>
               </View>
-              <View className="w-[1px] bg-white/10" />
+              <View className="w-px bg-white/10" />
               <View className="items-center">
                 <Text className="text-white font-black text-xl">#{userStats?.messageCount ? "42" : "-"}</Text>
                 <Text className="text-orange-100 text-[10px] font-bold uppercase tracking-widest">Rank</Text>
@@ -127,65 +127,6 @@ const ProfileScreen = () => {
           </View>
         }
       />
-    </View>
-  );
-};              Joined on{" "}
-              {joinDate.toLocaleDateString("en-IN", {
-                dateStyle: "long",
-              })}
-            </Text>
-          </View>
-        </SafeAreaView>
-      </View>
-
-      <View className="px-6 py-4">
-        {/* TABS OPTION */}
-        <View className="flex-row items-center gap-2 bg-slate-200 px-2 py-2 rounded-md">
-          {(["posts", "rooms", "stats"] as const).map((label) => (
-            <Pressable
-              key={label}
-              className={`${
-                activeTab === label ? "bg-white" : "bg-transparent"
-              } flex-1 items-center rounded-lg px-6 py-2 transition-transform duration-300 ease-in-out active:scale-[0.97]`}
-              onPress={() => setActiveTab(label)}
-            >
-              <Text
-                className={`capitalize ${
-                  activeTab === label ? "text-slate-900" : "text-slate-600"
-                }`}
-              >
-                {label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      {/* ACTIVE TAB DATA */}
-      {activeTab === "posts" ? (
-        <FlatList
-          data={userPosts}
-          keyExtractor={(item) => item.$id}
-          contentContainerClassName="px-6 mt-4 pb-40"
-          style={{ flex: 1 }}
-          renderItem={({ item }) => <PostCard userId={userId} post={item} />}
-        />
-      ) : activeTab === "stats" ? (
-        <View className="px-6 py-4">
-          <View className="bg-slate-200/60 border border-slate-200/80 h-40 px-3 py-1 items-center justify-center rounded-lg">
-            <Text className="text-xl font-medium text-slate-900">
-              {new Intl.NumberFormat("en-IN").format(messageCount)}{" "}
-              <Text className="text-sm">messages sent</Text>
-            </Text>
-
-            <Text className="text-sm text-slate-500">
-              You're doing great! Keep it up!
-            </Text>
-          </View>
-        </View>
-      ) : (
-        ""
-      )}
     </View>
   );
 };

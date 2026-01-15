@@ -4,7 +4,7 @@ import { fetchRooms } from "@/services/rooms.service";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, ScrollView, Text, View, RefreshControl } from "react-native";
+import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CreateRoomModal from "../components/CreateRoomModal";
 import MatchRoomCard from "../components/MatchRoomCard";
@@ -121,55 +121,10 @@ const RoomsScreen = () => {
         <Ionicons name="add" size={32} color="white" />
       </Pressable>
 
-      <CreateRoomModal isVisible={isVisible} setIsVisible={setIsVisible} />
+      <CreateRoomModal visible={isVisible} onClose={() => setIsVisible(false)} />
     </View>
   );
 };
-        {/* FILTER BAR */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            alignItems: "center",
-            gap: 8,
-            paddingHorizontal: 24,
-            paddingBottom: 16,
-          }}
-        >
-          {["all", "live", "upcoming", "finished"].map((label, index) => (
-            <FilterChip
-              key={index}
-              label={label}
-              selected={selectedFilter === label}
-              onPress={() => setSelectedFilter(label as any)}
-            />
-          ))}
-        </ScrollView>
 
-        {/* MATCH ROOM CARD */}
-        <FlatList
-          data={filteredRooms}
-          keyExtractor={(item) => item.$id}
-          contentContainerStyle={{ paddingTop: 4, paddingBottom: 130 }}
-          renderItem={({ item }) => <MatchRoomCard room={item} />}
-        />
-      </SafeAreaView>
-
-      {/* CREATE ROOM BUTTON */}
-      <Pressable
-        className="w-16 h-16 bg-orange-500 rounded-full items-center justify-center absolute bottom-6 right-6 shadow-md elevation-xs"
-        onPress={() => setIsVisible(!isVisible)}
-      >
-        <Octicons name="plus" size={24} color="white" />
-      </Pressable>
-
-      {/* CREATE ROOM MODAL */}
-      <CreateRoomModal
-        visible={isVisible}
-        onClose={() => setIsVisible(false)}
-      />
-    </View>
-  );
-};
 
 export default RoomsScreen;

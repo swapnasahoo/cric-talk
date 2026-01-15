@@ -15,7 +15,7 @@ const LeaderboardPodiumUser = ({ userStat, rank }: Props) => {
   return (
     <View className="items-center">
       {isFirst && (
-        <View className="mb-[-10px] z-10">
+        <View className="-mb-2.5 z-10">
           <Ionicons name="ribbon" size={28} color={crownColor} />
         </View>
       )}

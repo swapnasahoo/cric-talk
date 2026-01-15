@@ -3,19 +3,20 @@ import { showToast } from "@/libs/showToast";
 import { executePost, fetchPosts } from "@/services/posts.service";
 import { usePosts } from "@/store/usePosts";
 import { useUser } from "@/store/useUser";
-import { Octicons } from "@expo/vector-icons";
+import { Ionicons, Octicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ViewToken } from "react-native";
 import {
-    Alert,
-    Dimensions,
-    FlatList,
-    Modal,
-    Pressable,
-    RefreshControl,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Dimensions,
+  FlatList,
+  Modal,
+  Pressable,
+  RefreshControl,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,6 +28,7 @@ const HomeScreen = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [content, setContent] = useState<string>("");
 
   const posts = usePosts((s) => s.posts);
   const setPosts = usePosts((s) => s.setPosts);
@@ -64,7 +66,7 @@ const HomeScreen = () => {
         if (viewedPostsRef.current.has(item.$id)) return;
 
         viewedPostsRef.current.add(item.$id);
-        increamentView(item.$id);
+        incrementView(item.$id);
       });
     },
     [posts]
@@ -175,7 +177,7 @@ const HomeScreen = () => {
                 <TextInput
                   value={searchQuery}
                   onChangeText={setSearchQuery}
-                  ref={seacrhQueryRef}
+                  ref={searchQueryRef}
                   placeholder="Search posts or authors..."
                   className="flex-1 ml-3 text-slate-900"
                   placeholderTextColor="#94a3b8"
@@ -220,7 +222,7 @@ const HomeScreen = () => {
       {/* CREATE POST MODAL */}
       <Modal visible={isVisible} transparent animationType="slide">
         <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-[32px] h-[85%] pb-10">
+          <View className="bg-white rounded-t-4xl h-[85%] pb-10">
             <SafeAreaView className="flex-1" edges={['bottom']}>
               {/* MODAL HEADER */}
               <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -252,7 +254,7 @@ const HomeScreen = () => {
                       placeholder="What's happening in cricket?"
                       multiline
                       textAlignVertical="top"
-                      className="text-lg text-slate-900 min-h-[150px]"
+                      className="text-lg text-slate-900 min-h-37.5"
                       placeholderTextColor="#94a3b8"
                       autoFocus
                     />

@@ -131,25 +131,5 @@ const LoginScreen = () => {
     </View>
   );
 };
-              isDisabled ? "text-slate-500" : "text-white"
-            } font-medium text-lg text-center`}
-          >
-            Login
-          </Text>
-        </Pressable>
-
-        {/* SIGNUP LINK */}
-        <View className="flex-row items-center mx-auto mt-2 gap-2">
-          <Text className="text-lg font-medium text-slate-900">
-            Don't have an account?
-          </Text>
-          <Pressable onPress={() => router.replace("/(auth)/SignupScreen")}>
-            <Text className="text-lg text-orange-500 font-medium">Signup</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
-    </View>
-  );
-};
 
 export default LoginScreen;
