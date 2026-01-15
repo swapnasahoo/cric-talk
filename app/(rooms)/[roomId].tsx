@@ -208,7 +208,7 @@ const RoomDiscussion = () => {
                 onChangeText={setEditMessageContent}
                 multiline
                 autoFocus
-                className="text-slate-900 font-medium min-h-25"
+                className="text-slate-900 font-medium min-h-[100px]"
               />
             </View>
             <View className="flex-row gap-3">
