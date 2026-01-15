@@ -97,11 +97,9 @@ const RoomDiscussion = () => {
   const onSendMessage = async () => {
     if (!messageContent.trim()) return;
     try {
-      await handleCreateRoomMessage({ 
-        messageContent, 
-        userId: userId!, 
-        username: username!, 
-        setMessageContent 
+      await handleCreateRoomMessage({
+        messageContent,
+        setMessageContent,
       });
       // Content is cleared by hook
     } catch (error) {
