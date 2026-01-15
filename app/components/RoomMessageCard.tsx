@@ -97,9 +97,5 @@ const RoomMessageCard = ({
     </View>
   );
 };
-      )}
-    </View>
-  );
-};
 
 export default RoomMessageCard;
