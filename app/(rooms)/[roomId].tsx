@@ -2,29 +2,6 @@ import useKeyboardHeight from "@/hooks/useKeyboardHeight";
 import useRoomMessage from "@/hooks/useRoomMessage";
 import { Room } from "@/interfaces/Room";
 import { RoomMessage } from "@/interfaces/RoomMessage";
-import { account, client } from "@/libs/appwrite";
-import { showToast } from "@/libs/showToast";
-import { fetchRoomMessages } from "@/services/roomMessage.service";
-import { fetchRooms } from "@/services/rooms.service";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  Modal,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import RoomDetailsCard from "../components/RoomDetailsCard";
-import RoomMessageCard from "../components/RoomMessageCard";
-
-import useKeyboardHeight from "@/hooks/useKeyboardHeight";
-import useRoomMessage from "@/hooks/useRoomMessage";
-import { Room } from "@/interfaces/Room";
-import { RoomMessage } from "@/interfaces/RoomMessage";
 import { client } from "@/libs/appwrite";
 import { showToast } from "@/libs/showToast";
 import { fetchRoomMessages } from "@/services/roomMessage.service";
