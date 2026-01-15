@@ -1,0 +1,15 @@
+# Ignore IDE folders
+
+.idea/
+.vscode/
+
+# Ignore local environment files
+
+.env\*.local
+
+# Ignore build artifacts
+
+node_modules/
+dist/
+.expo/
+web-build/
