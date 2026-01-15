@@ -25,7 +25,7 @@ import ProfileDrawer from "../components/ProfileDrawer";
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const seacrhQueryRef = useRef<TextInput>(null);
+  const searchQueryRef = useRef<TextInput>(null);
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
