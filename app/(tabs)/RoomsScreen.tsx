@@ -1,6 +1,6 @@
-import { Room } from "@/interfaces/Room";
 import { showToast } from "@/libs/showToast";
 import { fetchRooms } from "@/services/rooms.service";
+import { useRooms } from "@/store/useRooms";
 import { Ionicons, Octicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -39,7 +39,8 @@ const FilterChip = ({ label, selected, onPress }: FilterChipProps) => {
 const RoomsScreen = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const rooms = useRooms((s) => s.rooms);
+  const setRooms = useRooms((s) => s.setRooms);
 
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "live" | "upcoming" | "finished"
