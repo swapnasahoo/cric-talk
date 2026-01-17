@@ -5,7 +5,7 @@ type RoomsStateType = {
   rooms: Room[];
   setRooms: (rooms: Room[]) => void;
   addRoom: (room: Room) => void;
-  updateRoom: (roomData: Partial<Room>) => void;
+  updateRoom: (roomData: Partial<Room> & Pick<Room, "$id">) => void;
   deleteRoom: (roomId: string) => void;
 };
 
