@@ -171,75 +171,82 @@ const PostDetails = () => {
           </SafeAreaView>
         </View>
 
-        <FlatList
-          data={commentList}
-          keyExtractor={(item) => item.$id}
+        <ScrollView
           className="flex-1"
           contentContainerStyle={{ paddingBottom: 60 }}
           showsVerticalScrollIndicator={false}
-          ListHeaderComponent={
-            <SafeAreaView>
-              <View className="px-6 -mt-4">
-                {/* POST CONTENT */}
-                <PostCard userId={userId} post={post} />
+        >
+          <SafeAreaView>
+            {/* POST DETAILS */}
+            <View className="px-6 -mt-4">
+              {/* POST CONTENT */}
+              <PostCard userId={userId} post={post} />
 
-                {/* COMMENTS SECTION */}
-                <View className="mt-4">
-                  <Text className="text-slate-900 font-semibold text-xl">
-                    Comments
-                  </Text>
-                </View>
-              </View>
-            </SafeAreaView>
-          }
-          renderItem={({ item }) => (
-            <View className="px-6">
-              <View className="border-b border-gray-300 pb-4 mt-4">
-                {/* AUTHOR INFO */}
-                <View className="flex-row items-center gap-2">
-                  {/* AUTHOR PROFILE IMAGE + DELETE */}
-                  <Pressable className="bg-gray-300 h-10 w-10 items-center justify-center rounded-full">
-                    <Text className="text-lg font-semibold capitalize text-slate-950">
-                      {item.authorId[0]}
-                    </Text>
-                  </Pressable>
-
-                  {/* AUTHOR NAME */}
-                  <Text className="text-lg font-medium text-slate-900">
-                    {item.authorId}
-                  </Text>
-
-                  {item.authorId === userId && (
-                    <Pressable
-                      className="ml-auto"
-                      onPress={() => handleDeleteComment(item.$id)}
-                    >
-                      <Ionicons name="trash-outline" size={18} color="gray" />
-                    </Pressable>
-                  )}
-                </View>
-
-                {/* COMMENT CONTENT */}
-                <View className="mt-4">
-                  <Text className="leading-6 text-slate-800">
-                    {item.content}
-                  </Text>
-                </View>
-
-                {/* PUBLISH DATE */}
-                <Text className="text-sm text-slate-600 ml-auto">
-                  {new Date(item.$createdAt).toLocaleDateString("en-IN", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                  })}
+              {/* COMMENTS SECTION */}
+              <View className="mt-4">
+                <Text className="text-slate-900 font-semibold text-xl">
+                  Comments
                 </Text>
+
+                {/* COMMENT LIST */}
+                <FlatList
+                  data={commentList}
+                  keyExtractor={(item) => item.$id}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                  renderItem={({ item }) => (
+                    <View className="border-b border-gray-300 pb-4 mt-4">
+                      {/* AUTHOR INFO */}
+                      <View className="flex-row items-center gap-2">
+                        {/* AUTHOR PROFILE IMAGE + DELETE */}
+                        <Pressable className="bg-gray-300 h-10 w-10 items-center justify-center rounded-full">
+                          <Text className="text-lg font-semibold capitalize text-slate-950">
+                            {item.authorId[0]}
+                          </Text>
+                        </Pressable>
+
+                        {/* AUTHOR NAME */}
+                        <Text className="text-lg font-medium text-slate-900">
+                          {item.authorId}
+                        </Text>
+
+                        {item.authorId === userId && (
+                          <Pressable
+                            className="ml-auto"
+                            onPress={() => handleDeleteComment(item.$id)}
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={18}
+                              color="gray"
+                            />
+                          </Pressable>
+                        )}
+                      </View>
+
+                      {/* COMMENT CONTENT */}
+                      <View className="mt-4">
+                        <Text className="leading-6 text-slate-800">
+                          {item.content}
+                        </Text>
+                      </View>
+
+                      {/* PUBLISH DATE */}
+                      <Text className="text-sm text-slate-600 ml-auto">
+                        {new Date(item.$createdAt).toLocaleDateString("en-IN", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                        })}
+                      </Text>
+                    </View>
+                  )}
+                />
               </View>
             </View>
-          )}
-        />
+          </SafeAreaView>
+        </ScrollView>
       </View>
 
       {/* COMMENT INPUT BOX */}

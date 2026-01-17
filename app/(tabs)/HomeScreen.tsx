@@ -1,12 +1,11 @@
 import { account } from "@/libs/appwrite";
-import { showToast } from "@/libs/showToast";
 import { executePost, fetchPosts } from "@/services/posts.service";
 import { usePosts } from "@/store/usePosts";
 import { useUser } from "@/store/useUser";
 import { Octicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ViewToken } from "react-native";
-import { ActivityIndicator, FlatList, Pressable, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CreatePostModal from "../components/CreatePostModal";
 import PostCard from "../components/PostCard";
@@ -19,14 +18,6 @@ const HomeScreen = () => {
   const seacrhQueryRef = useRef<TextInput>(null);
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [showFilter, setShowFilter] = useState(false);
-  const [sortBy, setSortBy] = useState<"trending" | "popular" | "newest">(
-    "trending"
-  );
 
   const posts = usePosts((s) => s.posts);
   const setPosts = usePosts((s) => s.setPosts);
@@ -77,54 +68,6 @@ const HomeScreen = () => {
     [posts]
   );
 
-  const loadPosts = async (refresh = false) => {
-    if (refresh) {
-      setRefreshing(true);
-      setHasMore(true);
-    } else {
-      if (loadingMore || !hasMore) return;
-      setLoadingMore(true);
-    }
-
-    try {
-      const currentOffset = refresh ? 0 : posts.length;
-      const data: any = await fetchPosts({
-        limit: 10,
-        offset: currentOffset,
-        sort: sortBy,
-      });
-      const newPosts = data.rows || data.documents || [];
-
-      if (refresh) {
-        setPosts(newPosts);
-      } else {
-        setPosts([...posts, ...newPosts]);
-      }
-
-      if (newPosts.length < 10) {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.log("Error loading posts:", error);
-
-      // Fallback to "newest" if "trending" or "popular" fails (likely due to missing index)
-      if (sortBy !== "newest") {
-        console.log("Sort failed, falling back to newest...");
-        setSortBy("newest");
-        return;
-      }
-
-      showToast({
-        type: "error",
-        text1: "Error",
-        text2: "Could not load posts. Please try again.",
-      });
-    } finally {
-      setRefreshing(false);
-      setLoadingMore(false);
-    }
-  };
-
   useEffect(() => {
     let mounted = true;
 
@@ -136,14 +79,17 @@ const HomeScreen = () => {
     }
     fetchUserId();
 
+    async function fetchAllPosts() {
+      if (!mounted) return;
+      const data = await fetchPosts();
+      setPosts(data.rows);
+    }
+    fetchAllPosts();
+
     return () => {
       mounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    loadPosts(true);
-  }, [sortBy]);
 
   return (
     <View className="flex-1 bg-white">
@@ -172,7 +118,7 @@ const HomeScreen = () => {
         </SafeAreaView>
       </View>
 
-      <View className="px-6 py-4 flex-1">
+      <View className="px-6 py-4">
         {/* SEARCH BAR + FILTER BUTTON */}
         <View className="flex-row items-center">
           <TextInput
@@ -183,66 +129,20 @@ const HomeScreen = () => {
             className="border border-gray-300 rounded-lg pl-4 flex-1 mr-4 h-12"
           />
 
-          <Pressable
-            className="bg-orange-500 w-12 h-12 rounded-lg items-center justify-center"
-            onPress={() => setShowFilter(!showFilter)}
-          >
+          <Pressable className="bg-orange-500 w-12 h-12 rounded-lg items-center justify-center">
             <Octicons name="filter" size={24} color="white" />
           </Pressable>
         </View>
 
-        {/* FILTER OPTIONS */}
-        {showFilter && (
-          <View className="flex-row justify-between mb-4 mt-2 gap-2">
-            {(["trending", "popular", "newest"] as const).map((option) => (
-              <Pressable
-                key={option}
-                className={`px-4 py-2 rounded-full border ${
-                  sortBy === option
-                    ? "bg-orange-500 border-orange-500"
-                    : "bg-white border-gray-300"
-                }`}
-                onPress={() => {
-                  setSortBy(option);
-                  setShowFilter(false);
-                }}
-              >
-                <Text
-                  className={`capitalize ${
-                    sortBy === option ? "text-white" : "text-slate-700"
-                  }`}
-                >
-                  {option}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
         {/* POSTS */}
-        <View className="mt-6 flex-1">
+        <View className="mt-6">
           <FlatList
             data={posts}
             keyExtractor={(item) => item.$id}
-            contentContainerStyle={{ paddingBottom: 100 }}
+            contentContainerStyle={{ paddingBottom: 200 }}
             showsVerticalScrollIndicator={false}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
-            refreshing={refreshing}
-            onRefresh={() => loadPosts(true)}
-            onEndReached={() => {
-              if (hasMore && !loadingMore) {
-                loadPosts(false);
-              }
-            }}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              loadingMore ? (
-                <View className="py-4">
-                  <ActivityIndicator size="small" color="#f97316" />
-                </View>
-              ) : null
-            }
             renderItem={({ item }) => <PostCard userId={userId} post={item} />}
           />
         </View>
