@@ -1,6 +1,8 @@
+import { Room } from "@/interfaces/Room";
 import { account } from "@/libs/appwrite";
 import { showToast } from "@/libs/showToast";
 import { executeRoom } from "@/services/rooms.service";
+import { useRooms } from "@/store/useRooms";
 import { useUser } from "@/store/useUser";
 import React, { useEffect, useState } from "react";
 import {
@@ -23,6 +25,8 @@ const CreateRoomModal = ({
 }) => {
   const [userId, setUserId] = useState<string>("");
   const username = useUser((s) => s.username) || "";
+
+  const addRoom = useRooms((s) => s.addRoom);
 
   const [createPostType, setCreatePostType] = useState<
     "teamInfo" | "matchInfo" | "roomSettings"
@@ -101,7 +105,7 @@ const CreateRoomModal = ({
     }
 
     try {
-      await executeRoom({
+      const execution = await executeRoom({
         action: "create",
         teams: [team1.trim(), team2.trim()],
         status,
@@ -110,6 +114,10 @@ const CreateRoomModal = ({
         matchType,
         isLocked,
       });
+      const parsed = JSON.parse(execution.responseBody);
+
+      const room: Room = parsed.data;
+      addRoom(room);
 
       onClose();
       setCreatePostType("teamInfo");
