@@ -23,11 +23,19 @@ export const useRooms = create<RoomsStateType>((set) => ({
       return { rooms: sortedRooms };
     }),
   updateRoom: (roomData) =>
-    set((s) => ({
-      rooms: s.rooms.map((r) =>
+    set((s) => {
+      const updatedRooms = s.rooms.map((r) =>
         r.$id === roomData.$id ? { ...r, ...roomData } : r
-      ),
-    })),
+      );
+
+      const sortedRooms = updatedRooms.sort(
+        (a, b) =>
+          new Date(b.startTime || "").getTime() -
+          new Date(a.startTime || "").getTime()
+      );
+
+      return { rooms: sortedRooms };
+    }),
   deleteRoom: (roomId) =>
     set((s) => ({ rooms: s.rooms.filter((r) => r.$id !== roomId) })),
 }));
