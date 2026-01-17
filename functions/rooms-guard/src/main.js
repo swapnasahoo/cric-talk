@@ -1,11 +1,11 @@
-import { Client, ID, TablesDB, Users } from "node-appwrite";
+import { Client, ID, TablesDB, Users } from 'node-appwrite';
 
 export default async ({ req, res }) => {
   try {
-    const userId = req.headers["x-appwrite-user-id"];
+    const userId = req.headers['x-appwrite-user-id'];
 
     if (!userId) {
-      throw new Error("Unauthorized: User is unauthorized");
+      throw new Error('Unauthorized: User is unauthorized');
     }
 
     const {
@@ -22,7 +22,7 @@ export default async ({ req, res }) => {
     const client = new Client()
       .setEndpoint(process.env.APPWRITE_ENDPOINT)
       .setProject(process.env.APPWRITE_PROJECT_ID)
-      .setKey(req.headers["x-appwrite-key"]);
+      .setKey(req.headers['x-appwrite-key']);
 
     const tablesDB = new TablesDB(client);
     const users = new Users(client);
@@ -31,10 +31,10 @@ export default async ({ req, res }) => {
     const ROOMS_TABLE_ID = process.env.APPWRITE_ROOMS_TABLE_ID;
 
     const user = await users.get(userId);
-    const authorName = user.name || user.email.split("@")[0];
+    const authorName = user.name || user.email.split('@')[0];
 
     async function createRoom() {
-      await tablesDB.createRow({
+      return await tablesDB.createRow({
         databaseId: CRIC_TALK_DATABASE_ID,
         tableId: ROOMS_TABLE_ID,
         rowId: ID.unique(),
@@ -67,20 +67,24 @@ export default async ({ req, res }) => {
         tableId: ROOMS_TABLE_ID,
         rowId: roomId,
       });
+
+      return { deleted: true, roomId };
     }
+
+    let result;
 
     switch (action) {
-      case "create":
-        await createRoom();
+      case 'create':
+        result = await createRoom();
         break;
-      case "delete":
-        await deleteRoom();
+      case 'delete':
+        result = await deleteRoom();
         break;
       default:
-        throw new Error('Invalid action')
+        throw new Error('Invalid action');
     }
 
-    return res.json({ success: true });
+    return res.json({ data: result, success: true });
   } catch (error) {
     throw new Error(`Unable to process query ${error}`);
   }
