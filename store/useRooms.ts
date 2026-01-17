@@ -12,7 +12,16 @@ type RoomsStateType = {
 export const useRooms = create<RoomsStateType>((set) => ({
   rooms: [],
   setRooms: (rooms) => set({ rooms }),
-  addRoom: (room) => set((s) => ({ rooms: [...s.rooms, room] })),
+  addRoom: (room) =>
+    set((s) => {
+      const updateRooms: Room[] = [...s.rooms, room];
+      const sortedRooms: Room[] = updateRooms.sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      );
+
+      return { rooms: sortedRooms };
+    }),
   updateRoom: (roomData) =>
     set((s) => ({
       rooms: s.rooms.map((r) =>
